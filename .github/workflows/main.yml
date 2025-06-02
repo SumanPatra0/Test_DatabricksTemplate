@@ -6,55 +6,53 @@ on:
 
   workflow_dispatch
  
-env:
-
-  DATABRICKS_HOST: ${{vars.HOST}}
-
-  DATABRICKS_TOKEN: ${{secrets.TOKEN}}
- 
 jobs:
 
   deploy:
 
     environment: dev
 
-    name: "Deploy bundle new"
+    name: "Deploy Databricks Bundle"
 
     runs-on: ubuntu-latest
  
     steps:
 
-      - uses: actions/checkout@v3
+      - name: Checkout repository
 
-      - uses: databricks/setup-cli@main
+        uses: actions/checkout@v3
  
-    ##  - run: |
+      - name: Set up Databricks CLI
 
-    ##      databricks auth login --host ${{ vars.DATABRICKS_HOST }}
-
-    ##
+        uses: databricks/setup-cli@main
  
-      - run: |
+      - name: Configure Databricks credentials
 
-          databricks bundle validate
+        run: |
+
+          mkdir -p ~/.databricks
+
+          echo '{
+
+            "host": "${{ vars.HOST }}",
+
+            "token": "${{ secrets.TOKEN }}"
+
+          }' > ~/.databricks/config
+ 
+      - name: Validate Databricks Bundle
+
+        run: databricks bundle validate
 
         env:
-
-          DATABRICKS_HOST: ${{vars.HOST}}
-
-          DATABRICKS_TOKEN: ${{secrets.TOKEN}}
 
           DATABRICKS_BUNDLE_ENV: dev
  
-      - run: |
+      - name: Deploy Databricks Bundle
 
-          databricks bundle deploy
+        run: databricks bundle deploy
 
         env:
-
-          DATABRICKS_HOST: ${{vars.HOST}}
-
-          DATABRICKS_TOKEN: ${{secrets.TOKEN}}
 
           DATABRICKS_BUNDLE_ENV: dev
 
